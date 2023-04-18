@@ -17,9 +17,9 @@ steps:
 
 - task: Npm@1
   inputs:
-    command: 'run'
+    command: 'build'
     arguments: 'build'
-  displayName: 'npm run build'
+  displayName: 'npm build'
 
 - task: Docker@2
   inputs:
