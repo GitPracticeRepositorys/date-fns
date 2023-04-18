@@ -1,35 +1,33 @@
-# Node.js app build and Docker image creation
-jobs:
-- job: BuildAndDeploy
-  pool:
-    vmImage: ubuntu-latest
-  steps:
-  - task: PowerShell@2
-    inputs:
-      targetType: 'inline'
-      script: 'node --version'
-    displayName: 'Check Node.js version'
-  - task: NodeTool@0
-    inputs:
-      versionSpec: '14.x'
-    displayName: 'Install Node.js'
-  - task: Npm@1
-    inputs:
-      command: 'install'
-      workingDir: '$(Build.SourcesDirectory)'
-    displayName: 'Install Node.js packages'
-  - task: Npm@1
-    inputs:
-      command: 'run'
-      arguments: 'build'
-      workingDir: '$(Build.SourcesDirectory)'
-    displayName: 'Build Node.js app'
-  - task: Docker@2
-    displayName: 'Build and push Docker image'
-    inputs:
-      containerRegistry: 'Docker-Hub-Connection'
-      repository: 'shivakrishna99/my-node-app'
-      command: 'buildAndPush'
-      Dockerfile: '**/Dockerfile'
-      buildContext: '$(Build.SourcesDirectory)'
-      tags: 'latest'
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '14.x'
+  displayName: 'Install Node.js'
+
+- script: |
+    npm install
+    npm run build
+  workingDirectory: $(System.DefaultWorkingDirectory)
+  displayName: 'npm install and build'
+
+- task: PowerShell@2
+  inputs:
+    targetType: 'inline'
+    script: 'node --version'
+
+- task: Docker@2
+  displayName: 'Build and push Docker image'
+  inputs:
+    containerRegistry: 'Docker-Hub-Connection' # Replace with your Docker service connection name
+    repository: 'shivakrishna99/my-node-app' # Replace with your Docker repository name
+    command: 'buildAndPush'
+    Dockerfile: '**/Dockerfile'
+    buildContext: '$(System.DefaultWorkingDirectory)'
+    tags: |
+      latest
