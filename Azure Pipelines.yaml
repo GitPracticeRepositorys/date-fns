@@ -1,20 +1,36 @@
-trigger:
-- main
+# Node.js app build
+- job: Build
+  pool:
+    vmImage: ubuntu-latest
+  steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '14.x'
+    displayName: 'Install Node.js'
+  - task: Npm@1
+    inputs:
+      command: 'install'
+      workingDir: '$(Build.SourcesDirectory)'
+  - task: Npm@1
+    inputs:
+      command: 'run'
+      arguments: 'build'
+      workingDir: '$(Build.SourcesDirectory)'
+    displayName: 'npm run build'
 
-pool:
-  vmImage: 'ubuntu-latest'
-
-steps:
-- task: NodeTool@0
-  inputs:
-    versionSpec: '16.x'
-  displayName: 'Install Node.js'
-
-- task: Docker@2
-  inputs:
-    containerRegistry: 'Docker-Hub-Connection'
-    repository: 'gitpractice/repositorys/date-fns'
-    command: 'buildAndPush'
-    Dockerfile: '**/Dockerfile'
-    tags: |
-      latest
+# Docker task to build and push Docker image
+- job: Docker
+  dependsOn: Build
+  pool:
+    vmImage: 'ubuntu-latest'
+  steps:
+  - task: Docker@2
+    displayName: 'Build and push Docker image'
+    inputs:
+      containerRegistry: 'Docker-Hub-Connection' # The name of your Docker service connection
+      repository: 'shivakrishna99/my-node-app' # Replace "my-node-app" with the name of your Docker image
+      command: 'buildAndPush'
+      Dockerfile: '**/Dockerfile'
+      buildContext: '$(Build.SourcesDirectory)'
+      tags: |
+        latest
