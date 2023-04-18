@@ -26,5 +26,4 @@
       dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
       tags: |
         $(Build.BuildId)
-        latest 
-
+        latest
